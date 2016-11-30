@@ -49,6 +49,19 @@ class Info(Resource):
     def get(self):
         return greyhound.GreyhoundInfo().run()
 
+# select_table
+greyhound_select_table_parser = reqparse.RequestParser()
+greyhound_select_table_parser.add_argument('table', type=str, required=True)
+
+@greyhound_ns.route("/select_table")
+class SelectTable(Resource):
+
+    @api.expect(greyhound_select_table_parser, validate=True)
+    def get(self):
+        args = greyhound_select_table_parser.parse_args()
+        return greyhound.GreyhoundSelectTable().run(args)
+
+
 # read
 greyhound_read_parser = reqparse.RequestParser()
 greyhound_read_parser.add_argument('depthBegin', type=int, required=True)

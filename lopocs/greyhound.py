@@ -52,6 +52,25 @@ class GreyhoundInfo(object):
 
         return resp
 
+class GreyhoundSelectTable(object):
+
+    def run(self, args):
+
+        # prepare parameters
+        table = args['table']
+
+        res = Session.query_aslist("SELECT to_regclass('{}')".format(table))
+
+        print ("YOUPI {} - {}".format(table, res))
+        if len(res) == 0 or res[0]==None:
+            content = {'please move along': 'nothing to see here'}
+            return content, 404
+        else:
+            Session.table = table
+            resp = Response('ok')
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['Content-Type'] = 'text/plain'
+            return resp
 
 class GreyhoundRead(object):
 
