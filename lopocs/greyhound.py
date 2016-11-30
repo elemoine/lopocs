@@ -120,7 +120,7 @@ class GreyhoundHierarchy(object):
         bbox = utils.list_from_str(args['bounds'])
 
         filename = ("{0}_{1}_{2}_{3}.hcy"
-                    .format(Session.dbname, lod_min, lod_max,
+                    .format(Session.table, lod_min, lod_max,
                             '_'.join(str(e) for e in bbox)))
         cached_hcy = utils.read_in_cache(filename)
 
