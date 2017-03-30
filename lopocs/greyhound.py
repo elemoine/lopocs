@@ -9,7 +9,7 @@ from flask import make_response
 from .database import Session
 from .utils import (
     list_from_str, read_in_cache,
-    write_in_cache, boundingbox_to_polygon,
+    write_in_cache, boundingbox_diagonal,
     patch_numpoints, hexa_signed_int32
 )
 from .conf import Config
@@ -202,7 +202,7 @@ def GreyhoundHierarchy(table, column, bounds, depthBegin, depthEnd, scale, offse
 
 
 def sql_hierarchy(session, box, lod):
-    poly = boundingbox_to_polygon(box)
+    diag = boundingbox_diagonal(box)
 
     maxpp_patch = session.lopocstable.max_points_per_patch
     maxpp_query = session.lopocstable.max_patches_per_query
@@ -239,10 +239,10 @@ def sql_hierarchy(session, box, lod):
             (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&
-                      st_geomfromtext('polygon (({2}))',{3})
+                      st_geomfromtext('linestring ({2})',{3})
                 order by morton {6}
             )_
-        """.format(session.column, session.table, poly, session.srsid,
+        """.format(session.column, session.table, diag, session.srsid,
                    range_min, range_max, sql_limit)
     else:
         sql = """
@@ -252,15 +252,15 @@ def sql_hierarchy(session, box, lod):
            (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&
-                      st_geomfromtext('polygon (({2}))',{3})
+                      st_geomfromtext('linestring ({2})',{3})
             )_
-        """.format(session.column, session.table, poly, session.srsid,
+        """.format(session.column, session.table, diag, session.srsid,
                    range_min, range_max)
     return sql
 
 
 def get_points_query(session, box, schema_pcid, lod):
-    poly = boundingbox_to_polygon(box)
+    diag = boundingbox_diagonal(box)
 
     # retrieve the number of points to select in a pcpatch
     range_min = 0
@@ -304,10 +304,10 @@ def get_points_query(session, box, schema_pcid, lod):
             (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&
-                      st_geomfromtext('polygon (({2}))',{3})
+                      st_geomfromtext('linestring ({2})',{3})
                 order by morton {6}
             )_
-        """.format(session.column, session.table, poly, session.srsid,
+        """.format(session.column, session.table, diag, session.srsid,
                    range_min, range_max, sql_limit, schema_pcid)
 
     else:
@@ -324,9 +324,9 @@ def get_points_query(session, box, schema_pcid, lod):
            (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&
-                      st_geomfromtext('polygon (({2}))',{3})
+                      st_geomfromtext('linestring ({2})',{3})
             )_
-        """.format(session.column, session.table, poly, session.srsid,
+        """.format(session.column, session.table, diag, session.srsid,
                    range_min, range_max, schema_pcid)
     return sql
 

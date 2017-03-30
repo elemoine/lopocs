@@ -7,7 +7,7 @@ from py3dtiles.feature_table import (FeatureTableHeader, FeatureTableBody, Featu
 from py3dtiles.tile import TileBody, TileHeader, Tile
 
 from .utils import (
-    read_uncompressed_patch, boundingbox_to_polygon, list_from_str, patch_numpoints
+    read_uncompressed_patch, boundingbox_diagonal, list_from_str, patch_numpoints
 )
 from .conf import Config
 from .database import Session
@@ -113,7 +113,7 @@ def get_points(session, box, lod, offsets, pcid, scales, schema):
 
 
 def sql_query(session, box, pcid, lod, hierarchy=False):
-    poly = boundingbox_to_polygon(box)
+    diag = boundingbox_diagonal(box)
 
     maxppp = session.lopocstable.max_points_per_patch
 
@@ -142,19 +142,19 @@ def sql_query(session, box, pcid, lod, hierarchy=False):
     if Config.USE_MORTON:
         sql = ("select pc_union(pc_range({0}, {4}, {5})) from "
                "(select {0} from {1} "
-               "where pc_boundingdiagonal({0}) && st_geomfromtext('polygon (("
-               "{2}))',{3}) order by morton {6})_;"
+               "where pc_boundingdiagonal({0}) && st_geomfromtext('linestring ("
+               "{2})',{3}) order by morton {6})_;"
                .format(session.column, session.table,
-                       poly, session.srsid, range_min, range_max,
+                       diag, session.srsid, range_min, range_max,
                        sql_limit))
     else:
         sql = ("select pc_compress(pc_setschema(pc_union("
                "pc_range({0}, {4}, {5})), {6}, "
                "pc_makepoint({6})), 'laz') from "
                "(select {0} from {1} where pc_boundingdiagonal({0}) && "
-               "st_geomfromtext('polygon (({2}))',{3}))_;"
+               "st_geomfromtext('linestring ({2})',{3}))_;"
                .format(session.column, session.table,
-                       poly, session.srsid, range_min, range_max, pcid))
+                       diag, session.srsid, range_min, range_max, pcid))
 
     return sql
 
