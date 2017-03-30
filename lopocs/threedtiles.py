@@ -151,7 +151,7 @@ def sql_query(session, box, pcid, lod, hierarchy=False):
         sql = ("select pc_compress(pc_setschema(pc_union("
                "pc_range({0}, {4}, {5})), {6}, "
                "pc_makepoint({6})), 'laz') from "
-               "(select {0} from {1} where pc_boundingdiagonal({0}) && "
+               "(select {0} from {1} where pc_boundingdiagonal({0}) &&& "
                "st_geomfromtext('linestring ({2})',{3}))_;"
                .format(session.column, session.table,
                        diag, session.srsid, range_min, range_max, pcid))

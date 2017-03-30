@@ -238,7 +238,7 @@ def sql_hierarchy(session, box, lod):
         from
             (
                 select {0} from {1}
-                where pc_boundingdiagonal({0}) &&
+                where pc_boundingdiagonal({0}) &&&
                       st_geomfromtext('linestring ({2})',{3})
                 order by morton {6}
             )_
@@ -251,7 +251,7 @@ def sql_hierarchy(session, box, lod):
         from
            (
                 select {0} from {1}
-                where pc_boundingdiagonal({0}) &&
+                where pc_boundingdiagonal({0}) &&&
                       st_geomfromtext('linestring ({2})',{3})
             )_
         """.format(session.column, session.table, diag, session.srsid,
@@ -303,7 +303,7 @@ def get_points_query(session, box, schema_pcid, lod):
         from
             (
                 select {0} from {1}
-                where pc_boundingdiagonal({0}) &&
+                where pc_boundingdiagonal({0}) &&&
                       st_geomfromtext('linestring ({2})',{3})
                 order by morton {6}
             )_
@@ -323,7 +323,7 @@ def get_points_query(session, box, schema_pcid, lod):
         from
            (
                 select {0} from {1}
-                where pc_boundingdiagonal({0}) &&
+                where pc_boundingdiagonal({0}) &&&
                       st_geomfromtext('linestring ({2})',{3})
             )_
         """.format(session.column, session.table, diag, session.srsid,
