@@ -297,11 +297,11 @@ def get_points_query(session, box, schema_pcid, lod):
         sql = """
         select
             pc_compress(
-                pc_setpcid(
+                pc_setschema(
                     pc_union(
                         pc_filterbetween(
                             pc_range({0}, {4}, {5}), 'Z', {6}, {7})
-                        ), {9}
+                        ), {9}, pc_makepoint({9})
                     ), 'laz'
                 )
         from
@@ -319,11 +319,11 @@ def get_points_query(session, box, schema_pcid, lod):
         sql = """
         select
             pc_compress(
-                pc_setpcid(
+                pc_setschema(
                     pc_union(
                         pc_filterbetween(
                             pc_range({0}, {4}, {5}), 'Z', {6}, {7} )
-                        ), {9}
+                        ), {9}, pc_makepoint({9})
                     ), 'laz'
             )
         from

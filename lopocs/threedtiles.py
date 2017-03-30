@@ -151,9 +151,10 @@ def sql_query(session, box, pcid, lod, hierarchy=False):
                        box[2] - 0.1, box[5] + 0.1, sql_limit,
                        pcid))
     else:
-        sql = ("select pc_compress(pc_setpcid(pc_union("
+        sql = ("select pc_compress(pc_setschema(pc_union("
                "pc_filterbetween( "
-               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )), {9}), 'laz') from "
+               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )), {9}, "
+               "pc_makepoint({9})), 'laz') from "
                "(select {0} from {1} where pc_intersects({0}, "
                "st_geomfromtext('polygon (({2}))',{3})) {8})_;"
                .format(session.column, session.table,
