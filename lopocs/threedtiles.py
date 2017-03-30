@@ -140,27 +140,21 @@ def sql_query(session, box, pcid, lod, hierarchy=False):
         sql_limit = " limit {0} ".format(maxppq)
 
     if Config.USE_MORTON:
-        sql = ("select pc_union("
-               "pc_filterbetween( "
-               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )) from "
+        sql = ("select pc_union(pc_range({0}, {4}, {5})) from "
                "(select {0} from {1} "
-               "where pc_intersects({0}, st_geomfromtext('polygon (("
-               "{2}))',{3})) order by morton {8})_;"
+               "where pc_boundingdiagonal({0}) && st_geomfromtext('polygon (("
+               "{2}))',{3}) order by morton {6})_;"
                .format(session.column, session.table,
                        poly, session.srsid, range_min, range_max,
-                       box[2] - 0.1, box[5] + 0.1, sql_limit,
-                       pcid))
+                       sql_limit))
     else:
         sql = ("select pc_compress(pc_setschema(pc_union("
-               "pc_filterbetween( "
-               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )), {9}, "
-               "pc_makepoint({9})), 'laz') from "
-               "(select {0} from {1} where pc_intersects({0}, "
-               "st_geomfromtext('polygon (({2}))',{3})) {8})_;"
+               "pc_range({0}, {4}, {5})), {6}, "
+               "pc_makepoint({6})), 'laz') from "
+               "(select {0} from {1} where pc_boundingdiagonal({0}) && "
+               "st_geomfromtext('polygon (({2}))',{3}))_;"
                .format(session.column, session.table,
-                       poly, session.srsid, range_min, range_max,
-                       box[2], box[5], sql_limit,
-                       pcid))
+                       poly, session.srsid, range_min, range_max, pcid))
 
     return sql
 

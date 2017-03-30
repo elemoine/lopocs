@@ -234,31 +234,28 @@ def sql_hierarchy(session, box, lod):
     if Config.USE_MORTON:
         sql = """
         select
-            pc_union(pc_filterbetween(pc_range({0}, {4}, {5}), 'Z', {6}, {7} ))
+            pc_union(pc_range({0}, {4}, {5}))
         from
             (
                 select {0} from {1}
-                where pc_intersects(
-                    {0},
-                    st_geomfromtext('polygon (({2}))',{3})
-                ) order by morton {8}
+                where pc_boundingdiagonal({0}) &&
+                      st_geomfromtext('polygon (({2}))',{3})
+                order by morton {6}
             )_
         """.format(session.column, session.table, poly, session.srsid,
-                   range_min, range_max, box[2], box[5], sql_limit)
+                   range_min, range_max, sql_limit)
     else:
         sql = """
         select
-            pc_union(pc_filterbetween(pc_range({0}, {4}, {5}), 'Z', {6}, {7} ))
+            pc_union(pc_range({0}, {4}, {5}))
         from
            (
                 select {0} from {1}
-                where pc_intersects(
-                    {0},
-                    st_geomfromtext('polygon (({2}))',{3})
-                ) {8}
+                where pc_boundingdiagonal({0}) &&
+                      st_geomfromtext('polygon (({2}))',{3})
             )_
         """.format(session.column, session.table, poly, session.srsid,
-                   range_min, range_max, box[2], box[5], sql_limit)
+                   range_min, range_max)
     return sql
 
 
@@ -299,21 +296,19 @@ def get_points_query(session, box, schema_pcid, lod):
             pc_compress(
                 pc_setschema(
                     pc_union(
-                        pc_filterbetween(
-                            pc_range({0}, {4}, {5}), 'Z', {6}, {7})
-                        ), {9}, pc_makepoint({9})
+                        pc_range({0}, {4}, {5})
+                        ), {7}, pc_makepoint({7})
                     ), 'laz'
                 )
         from
             (
                 select {0} from {1}
-                where pc_intersects(
-                    {0},
-                    st_geomfromtext('polygon (({2}))',{3})
-                ) order by morton {8}
+                where pc_boundingdiagonal({0}) &&
+                      st_geomfromtext('polygon (({2}))',{3})
+                order by morton {6}
             )_
         """.format(session.column, session.table, poly, session.srsid,
-                   range_min, range_max, box[2], box[5], sql_limit, schema_pcid)
+                   range_min, range_max, sql_limit, schema_pcid)
 
     else:
         sql = """
@@ -321,21 +316,18 @@ def get_points_query(session, box, schema_pcid, lod):
             pc_compress(
                 pc_setschema(
                     pc_union(
-                        pc_filterbetween(
-                            pc_range({0}, {4}, {5}), 'Z', {6}, {7} )
-                        ), {9}, pc_makepoint({9})
+                        pc_range({0}, {4}, {5})
+                        ), {6}, pc_makepoint({6})
                     ), 'laz'
             )
         from
            (
                 select {0} from {1}
-                where pc_intersects(
-                    {0},
-                    st_geomfromtext('polygon (({2}))',{3})
-                ) {8}
+                where pc_boundingdiagonal({0}) &&
+                      st_geomfromtext('polygon (({2}))',{3})
             )_
         """.format(session.column, session.table, poly, session.srsid,
-                   range_min, range_max, box[2], box[5], sql_limit, schema_pcid)
+                   range_min, range_max, schema_pcid)
     return sql
 
 
