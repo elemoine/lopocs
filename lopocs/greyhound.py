@@ -252,10 +252,10 @@ def sql_hierarchy(session, box, lod):
            (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&&
-                      st_geomfromtext('linestring ({2})',{3})
+                      st_geomfromtext('linestring ({2})',{3}) {6}
             )_
         """.format(session.column, session.table, diag, session.srsid,
-                   range_min, range_max)
+                   range_min, range_max, sql_limit)
     return sql
 
 
@@ -317,17 +317,17 @@ def get_points_query(session, box, schema_pcid, lod):
                 pc_setschema(
                     pc_union(
                         pc_range({0}, {4}, {5})
-                        ), {6}, pc_makepoint({6})
+                        ), {6}, pc_makepoint({7})
                     ), 'laz'
             )
         from
            (
                 select {0} from {1}
                 where pc_boundingdiagonal({0}) &&&
-                      st_geomfromtext('linestring ({2})',{3})
+                      st_geomfromtext('linestring ({2})',{3}) {6}
             )_
         """.format(session.column, session.table, diag, session.srsid,
-                   range_min, range_max, schema_pcid)
+                   range_min, range_max, sql_limit, schema_pcid)
     return sql
 
 
