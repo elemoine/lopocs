@@ -140,6 +140,18 @@ def boundingbox_to_polygon(box):
     return boxstr
 
 
+def boundingbox_diagonal(box):
+    """
+    input box = [xmin, ymin, zmin, xmax, ymax, zmax]
+    output = 'xmin ymin zmin, xmax ymax zmax'
+    """
+    boxstr = (
+        "{0} {1} {2}, {3} {4} {5}"
+        .format(box[0], box[1], box[2], box[3], box[4], box[5])
+    )
+    return boxstr
+
+
 def list_from_str_box(box_str):
     """
     Transform a string 'BOX(xmin, ymin, xmax, ymax)' to
