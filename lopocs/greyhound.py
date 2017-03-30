@@ -297,7 +297,7 @@ def get_points_query(session, box, schema_pcid, lod):
                 pc_setschema(
                     pc_union(
                         pc_range({0}, {4}, {5})
-                        ), {7}, pc_makepoint({7})
+                        ), {7}
                     ), 'laz'
                 )
         from
@@ -317,7 +317,7 @@ def get_points_query(session, box, schema_pcid, lod):
                 pc_setschema(
                     pc_union(
                         pc_range({0}, {4}, {5})
-                        ), {6}, pc_makepoint({7})
+                        ), {7}
                     ), 'laz'
             )
         from
