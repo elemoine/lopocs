@@ -223,8 +223,8 @@ def sql_hierarchy(session, box, lod):
         for i in range(0, lod + 1):
             end = end + pow(4, i)
 
+        range_min = beg
         range_max = end - beg
-        range_min = beg + 1
 
     # build the sql query
     sql_limit = ""
@@ -281,8 +281,8 @@ def get_points_query(session, box, schema_pcid, lod):
         for i in range(0, lod + 1):
             end = end + pow(4, i)
 
+        range_min = beg
         range_max = end - beg
-        range_min = beg + 1
 
     # build the sql query
     sql_limit = ""
