@@ -294,10 +294,10 @@ def get_points_query(session, box, schema_pcid, lod):
         sql = """
         select
             pc_compress(
-                pc_setschema(
+                pc_setpcid(
                     pc_union(
                         pc_range({0}, {4}, {5})
-                        ), {7}
+                        ), {7}, TRUE
                     ), 'laz'
                 )
         from
@@ -314,10 +314,10 @@ def get_points_query(session, box, schema_pcid, lod):
         sql = """
         select
             pc_compress(
-                pc_setschema(
+                pc_setpcid(
                     pc_union(
                         pc_range({0}, {4}, {5})
-                        ), {7}
+                        ), {7}, TRUE
                     ), 'laz'
             )
         from
