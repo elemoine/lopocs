@@ -32,7 +32,8 @@ def schema_dtype(schema):
         for dim in schema
     ]
 
-    return np.dtype({'names': [dim['name'] for dim in schema], 'formats': formats})
+    return np.dtype(
+            {'names': [dim['name'] for dim in schema], 'formats': formats})
 
 
 def read_uncompressed_patch(pcpatch_wkb, schema):
