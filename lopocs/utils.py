@@ -60,7 +60,7 @@ def decompress(points, schema):
     """
 
     # retrieve number of points in wkb pgpointcloud patch
-    npoints = patch_nbpoints_laz(points)
+    npoints = patch_numpoints(points)
     hexbuffer = unhexlify(points[34:])
     hexbuffer += hexa_signed_int32(npoints)
 
@@ -165,13 +165,8 @@ def hexa_signed_uint8(val):
     return pack('B', val)
 
 
-def patch_nbpoints_unc(pcpatch_wkb):
-    '''get number of points in a uncompressed patch
+def patch_numpoints(pcpatch_wkb):
+    '''get number of points in a patch
     '''
-    npoints_hexa = pcpatch_wkb[18:26]
-    return unpack("I", unhexlify(npoints_hexa))[0]
-
-
-def patch_nbpoints_laz(pcpatch_wkb):
     npoints_hexa = pcpatch_wkb[18:26]
     return unpack("I", unhexlify(npoints_hexa))[0]

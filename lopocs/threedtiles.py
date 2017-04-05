@@ -7,7 +7,7 @@ from py3dtiles.feature_table import (FeatureTableHeader, FeatureTableBody, Featu
 from py3dtiles.tile import TileBody, TileHeader, Tile
 
 from .utils import (
-    read_uncompressed_patch, boundingbox_to_polygon, list_from_str, patch_nbpoints_unc
+    read_uncompressed_patch, boundingbox_to_polygon, list_from_str, patch_numpoints
 )
 from .conf import Config
 from .database import Session
@@ -286,7 +286,7 @@ def children(session, baseurl, lod_max, offsets, bbox, lod, pcid, err):
 
     json_me = {}
     if lod <= lod_max and pcpatch_wkb:
-        npoints = patch_nbpoints_unc(pcpatch_wkb)
+        npoints = patch_numpoints(pcpatch_wkb)
         # print(npoints)
         if npoints > 0:
             json_me = build_children_section(session, baseurl, offsets, bbox, err, lod)
