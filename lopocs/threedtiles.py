@@ -202,25 +202,21 @@ def sql_query(session, box, pcid, lod):
 
     if Config.USE_MORTON:
         sql = ("select pc_union("
-               "pc_filterbetween( "
-               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )) from "
+               "pc_range({0}, {4}, {5})) from "
                "(select {0} from {1} "
                "where pc_intersects({0}, st_geomfromtext('polygon (("
-               "{2}))',{3})) order by morton {8})_;"
+               "{2}))',{3})) order by morton {6})_;"
                .format(session.column, session.table,
                        poly, session.srsid, range_min, range_max,
-                       box[2] - 0.1, box[5] + 0.1, sql_limit,
-                       pcid))
+                       sql_limit, pcid))
     else:
         sql = ("select pc_compress(pc_transform(pc_union("
-               "pc_filterbetween( "
-               "pc_range({0}, {4}, {5}), 'Z', {6}, {7} )), {9}), 'laz') from "
+               "pc_range({0}, {4}, {5})), {9}), 'laz') from "
                "(select {0} from {1} where pc_intersects({0}, "
-               "st_geomfromtext('polygon (({2}))',{3})) {8})_;"
+               "st_geomfromtext('polygon (({2}))',{3})) {6})_;"
                .format(session.column, session.table,
                        poly, session.srsid, range_min, range_max,
-                       box[2], box[5], sql_limit,
-                       pcid))
+                       sql_limit, pcid))
 
     return sql
 
@@ -323,26 +319,16 @@ def build_children_section(session, baseurl, offsets, bbox, err, lod):
 def split_bbox(bbox):
     width = bbox[3] - bbox[0]
     length = bbox[4] - bbox[1]
-    height = bbox[5] - bbox[2]
-
-    up = bbox[5]
-    middle = up - height / 2
-    down = bbox[2]
 
     x = bbox[0]
     y = bbox[1]
 
-    bbox_nwd = [x, y + length / 2, down, x + width / 2, y + length, middle]
-    bbox_nwu = [x, y + length / 2, middle, x + width / 2, y + length, up]
-    bbox_ned = [x + width / 2, y + length / 2, down, x + width, y + length, middle]
-    bbox_neu = [x + width / 2, y + length / 2, middle, x + width, y + length, up]
-    bbox_swd = [x, y, down, x + width / 2, y + length / 2, middle]
-    bbox_swu = [x, y, middle, x + width / 2, y + length / 2, up]
-    bbox_sed = [x + width / 2, y, down, x + width, y + length / 2, middle]
-    bbox_seu = [x + width / 2, y, middle, x + width, y + length / 2, up]
+    bbox_nw = [x, y + length / 2, bbox[2], x + width / 2, y + length, bbox[5]]
+    bbox_ne = [x + width / 2, y + length / 2, bbox[2], x + width, y + length, bbox[5]]
+    bbox_sw = [x, y, bbox[2], x + width / 2, y + length / 2, bbox[5]]
+    bbox_se = [x + width / 2, y, bbox[2], x + width, y + length / 2, bbox[5]]
 
-    return [bbox_nwd, bbox_nwu, bbox_ned, bbox_neu, bbox_swd, bbox_swu,
-            bbox_sed, bbox_seu]
+    return [bbox_nw, bbox_ne, bbox_sw, bbox_se]
 
 
 def children(session, baseurl, offsets, bbox, lod, pcid, err):
