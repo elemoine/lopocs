@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
+import traceback
 from struct import Struct
 from collections import namedtuple
 
 import numpy as np
 from flask import make_response, abort
 
-from .utils import read_uncompressed_patch, boundingbox_to_polygon
+from .utils import read_uncompressed_patch, read_uncompressed_patches,  boundingbox_to_polygon
 from .database import Session
 
 
@@ -66,7 +67,8 @@ def ItownsRead(table, column, bbox_encoded, isleaf, last_modified):
             schema,
             isleaf
         )
-    except TypeError:
+    except TypeError as e:
+        traceback.print_exc()
         return abort(404)
 
     # build flask response
@@ -322,9 +324,11 @@ pdt = np.dtype([('X', np.float32), ('Y', np.float32), ('Z', np.float32)])
 def get_points(session, box, lod, offsets, pcid, scales, schema, isleaf):
     sql = sql_query(session, box, pcid, lod, isleaf)
 
-    pcpatch_wkb = session.query(sql)[0][0]
-    points, npoints = read_uncompressed_patch(pcpatch_wkb, schema)
-    print('npoints', npoints)
+    patch_rows = session.query(sql)
+    points, npoints = read_uncompressed_patches(patch_rows, schema)
+
+    if npoints == 0:
+        raise TypeError()
     fields = points.dtype.fields.keys()
 
     if 'Red' in fields:
@@ -383,6 +387,6 @@ def sql_query(session, box, pcid, lod, isleaf):
         count = patch_size - start
 
     sql = POINT_QUERY.format(z1=box.zmin, z2=box.zmax,
-                             last_select='pc_union(points)',
+                             last_select='points',
                              **locals())
     return sql

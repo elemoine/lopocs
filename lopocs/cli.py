@@ -45,7 +45,7 @@ PDAL_PIPELINE = """
     }},
     {reproject}
     {{
-        "type": "filters.randomize"
+        "type": "filters.revertmorton"
     }},
     {{
         "type":"writers.pgpointcloud",

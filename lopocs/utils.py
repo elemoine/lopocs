@@ -55,6 +55,22 @@ def read_uncompressed_patch(pcpatch_wkb, schema):
     return patch, npoints
 
 
+def read_uncompressed_patches(patch_rows, schema):
+    npoints = 0
+    patches_bin = b''
+    for patch_row in patch_rows:
+        patch_wkb = patch_row[0]
+        if patch_wkb:
+            patch_bin = unhexlify(patch_wkb)
+            npoints += unpack("I", patch_bin[9:13])[0]
+            patches_bin += patch_bin[13:]
+    if npoints:
+        points = np.fromstring(patches_bin, dtype=schema_dtype(schema))
+    else:
+        points = None
+    return points, npoints
+
+
 def decompress(points, schema):
     """
     Decode patch encoded with lazperf.
