@@ -5,7 +5,7 @@ from collections import namedtuple
 import numpy as np
 from flask import make_response, abort
 
-from .utils import read_uncompressed_patch, boundingbox_to_polygon
+from .utils import read_uncompressed_patch, boundingbox_to_diagonal
 from .database import Session
 
 
@@ -26,12 +26,11 @@ POINT_QUERY = """
             points
             , random() as rand
         from {session.table}
-        where pc_intersects({session.column},
-            st_geomfromtext('polygon (({poly}))', {session.srsid}))
-        and zavg && numrange({z1}::numeric, {z2}::numeric)
+        where pc_boundingdiagonalgeometry({session.column}) &&&
+            st_geomfromtext('linestringz({diag})', {session.srsid})
     ), ordered as (
         select
-            pc_filterbetween(pc_range({session.column}, {start} + 1, {count}), 'Z', {z1}, {z2}) as points
+            pc_range({session.column}, {start} + 1, {count}) as points
         from patches
         order by rand
         {sql_limit}
@@ -102,7 +101,7 @@ def ItownsHrc(table, column, bbox_encoded, last_modified):
 
 
 def get_numpoints(session, box, lod, patch_size):
-    poly = boundingbox_to_polygon([
+    diag = boundingbox_to_diagonal([
         box.xmin, box.ymin, box.zmin, box.xmax, box.ymax, box.zmax
     ])
 
@@ -116,7 +115,6 @@ def get_numpoints(session, box, lod, patch_size):
         sql_limit = " limit {0} ".format(maxppq)
 
     sql = POINT_QUERY.format(
-        z1=box.zmin, z2=box.zmax,
         last_select='sum(pc_numpoints(points))',
         **locals()
     )
@@ -321,6 +319,7 @@ pdt = np.dtype([('X', np.float32), ('Y', np.float32), ('Z', np.float32)])
 
 def get_points(session, box, lod, offsets, pcid, scales, schema, isleaf):
     sql = sql_query(session, box, pcid, lod, isleaf)
+    print(sql)
 
     pcpatch_wkb = session.query(sql)[0][0]
     points, npoints = read_uncompressed_patch(pcpatch_wkb, schema)
@@ -362,7 +361,7 @@ def get_points(session, box, lod, offsets, pcid, scales, schema, isleaf):
 
 
 def sql_query(session, box, pcid, lod, isleaf):
-    poly = boundingbox_to_polygon([
+    diag = boundingbox_to_diagonal([
         box.xmin, box.ymin, box.zmin, box.xmax, box.ymax, box.zmax
     ])
 
@@ -382,7 +381,5 @@ def sql_query(session, box, pcid, lod, isleaf):
         # we want all points left
         count = patch_size - start
 
-    sql = POINT_QUERY.format(z1=box.zmin, z2=box.zmax,
-                             last_select='pc_union(points)',
-                             **locals())
+    sql = POINT_QUERY.format(last_select='pc_union(points)', **locals())
     return sql
